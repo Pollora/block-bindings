@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-15
+
 ### Added
 
 - The Block Bindings classes of the Pollora framework as a package of their own, class names unchanged: `BindingResolver`, `BindingSourceBuilder`, `BindingSourceRegistry`, `BindingContext`, the four sources Pollora ships (`PostMetaSource`, `TermMetaSource`, `AuthorMetaSource`, `OptionSource`), `BlockBindingDiscovery`, the WordPress adapters, the editor data and script (`resources/js/block-bindings.js`) and the preview route `ResolveBindingsController`
