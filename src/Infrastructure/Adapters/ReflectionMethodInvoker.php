@@ -63,6 +63,6 @@ final readonly class ReflectionMethodInvoker implements MethodInvokerInterface
 
         $constructor = class_exists($class) ? (new ReflectionClass($class))->getConstructor() : null;
 
-        return class_exists($class) && ($constructor === null || $constructor->getNumberOfRequiredParameters() === 0) ? new $class : null;
+        return class_exists($class) && (! $constructor instanceof ReflectionMethod || $constructor->getNumberOfRequiredParameters() === 0) ? new $class : null;
     }
 }
