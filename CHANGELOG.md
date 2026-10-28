@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Requires `pollora/colt` `^11.0`** (it was `^10.0.1`). Colt 11 needs PHP 8.3, which this package already required
+
 ## [0.1.0] - 2026-10-15
 
 ### Added
