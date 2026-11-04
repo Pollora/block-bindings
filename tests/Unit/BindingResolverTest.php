@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Pollora\BlockBinding\Application\Services\BindingResolver;
 use Pollora\BlockBinding\Application\Services\BindingSourceBuilder;
+use Pollora\BlockBinding\Infrastructure\Adapters\ReflectionMethodInvoker;
 use Pollora\BlockBinding\Tests\Fixtures\EventBinding;
 use Pollora\BlockBinding\Tests\Fixtures\FakePresenter;
 use Pollora\BlockBinding\Tests\Fixtures\FakeVisibility;
@@ -169,7 +170,7 @@ it('calls a method through the reflection invoker with the given parameters', fu
         }
     };
 
-    $invoker = new Pollora\BlockBinding\Infrastructure\Adapters\ReflectionMethodInvoker;
+    $invoker = new ReflectionMethodInvoker;
 
     expect($invoker->call($source, 'greet', ['name' => 'Ada']))->toBe('Hello Ada!');
 });
