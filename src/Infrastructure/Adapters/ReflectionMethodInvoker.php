@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Pollora\BlockBinding\Infrastructure\Adapters;
 
-use InvalidArgumentException;
+use Pollora\BlockBinding\Application\Services\DefaultMethodInvoker;
 use Pollora\BlockBinding\Domain\Contracts\MethodInvokerInterface;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
 
 /**
  * Calls a source's method by reflection, for a project without Laravel's
@@ -18,51 +14,21 @@ use ReflectionNamedType;
  * class name; another class-typed parameter is asked of the container, if
  * there is one, or built when it needs no argument; else its default value, or
  * null when it allows it.
+ *
+ * The work is the application layer's {@see DefaultMethodInvoker}, which the
+ * resolver uses when it is given no invoker.
  */
 final readonly class ReflectionMethodInvoker implements MethodInvokerInterface
 {
-    public function __construct(private ?ContainerInterface $container = null) {}
+    private DefaultMethodInvoker $invoker;
+
+    public function __construct(?ContainerInterface $container = null)
+    {
+        $this->invoker = new DefaultMethodInvoker($container);
+    }
 
     public function call(object $instance, string $method, array $parameters): mixed
     {
-        $reflection = new ReflectionMethod($instance, $method);
-        $arguments = [];
-
-        foreach ($reflection->getParameters() as $parameter) {
-            $type = $parameter->getType();
-            $class = $type instanceof ReflectionNamedType && ! $type->isBuiltin() ? $type->getName() : null;
-
-            $arguments[] = match (true) {
-                array_key_exists($parameter->getName(), $parameters) => $parameters[$parameter->getName()],
-                $class !== null && array_key_exists($class, $parameters) => $parameters[$class],
-                $class !== null && ($service = $this->service($class)) !== null => $service,
-                $parameter->isDefaultValueAvailable() => $parameter->getDefaultValue(),
-                $type?->allowsNull() === true => null,
-                default => throw new InvalidArgumentException(sprintf('Unable to resolve the parameter $%s of %s::%s().', $parameter->getName(), $instance::class, $method)),
-            };
-        }
-
-        return $reflection->invokeArgs($instance, $arguments);
-    }
-
-    /**
-     * A service the container gives, or an instance of a class that needs
-     * nothing to be built.
-     */
-    private function service(string $class): ?object
-    {
-        if ($this->container?->has($class) === true) {
-            return $this->container->get($class);
-        }
-
-        try {
-            return $this->container?->get($class);
-        } catch (ContainerExceptionInterface) {
-            // not a service of this container: a class with no required argument is built below
-        }
-
-        $constructor = class_exists($class) ? (new ReflectionClass($class))->getConstructor() : null;
-
-        return class_exists($class) && (! $constructor instanceof ReflectionMethod || $constructor->getNumberOfRequiredParameters() === 0) ? new $class : null;
+        return $this->invoker->call($instance, $method, $parameters);
     }
 }

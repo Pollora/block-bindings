@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Pollora\BlockBinding\Application\Services\BindingResolver;
 use Pollora\BlockBinding\Application\Services\BindingSourceBuilder;
+use Pollora\BlockBinding\Infrastructure\Adapters\ReflectionMethodInvoker;
 use Pollora\BlockBinding\Tests\Fixtures\EventBinding;
 use Pollora\BlockBinding\Tests\Fixtures\FakePresenter;
 use Pollora\BlockBinding\Tests\Fixtures\FakeVisibility;
@@ -158,4 +159,18 @@ describe('announcing resolutions', function (): void {
 
         expect($this->events->announced[0]->hasValue)->toBeFalse();
     });
+});
+
+it('calls a method through the reflection invoker with the given parameters', function (): void {
+    $source = new class
+    {
+        public function greet(string $name, string $punctuation = '!'): string
+        {
+            return 'Hello '.$name.$punctuation;
+        }
+    };
+
+    $invoker = new ReflectionMethodInvoker;
+
+    expect($invoker->call($source, 'greet', ['name' => 'Ada']))->toBe('Hello Ada!');
 });
