@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The `BindingResolver` builds its default invoker from the new application-layer `DefaultMethodInvoker` instead of the infrastructure `ReflectionMethodInvoker`, so that the application layer no longer depends on the infrastructure layer. `ReflectionMethodInvoker` keeps its name, namespace and behavior: it delegates to `DefaultMethodInvoker`
+
 ## [0.2.0] - 2026-10-28
 
 The package now requires Colt 11: update `pollora/colt` to `^11.0` (PHP 8.3 or later, which this package already needed).

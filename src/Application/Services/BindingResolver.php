@@ -14,7 +14,6 @@ use Pollora\BlockBinding\Domain\Events\BindingResolved;
 use Pollora\BlockBinding\Domain\Models\BindingContext;
 use Pollora\BlockBinding\Domain\Models\BindingFieldDefinition;
 use Pollora\BlockBinding\Domain\Models\BindingSource;
-use Pollora\BlockBinding\Infrastructure\Adapters\ReflectionMethodInvoker;
 use Pollora\Meta\Application\Services\MetaAccessor;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -70,7 +69,7 @@ final class BindingResolver
         private readonly ?BindingEventsInterface $events = null,
         private readonly ?PostFinderInterface $posts = null,
     ) {
-        $this->invoker = $invoker ?? new ReflectionMethodInvoker($container);
+        $this->invoker = $invoker ?? new DefaultMethodInvoker($container);
     }
 
     /**

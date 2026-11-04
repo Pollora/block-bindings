@@ -159,3 +159,17 @@ describe('announcing resolutions', function (): void {
         expect($this->events->announced[0]->hasValue)->toBeFalse();
     });
 });
+
+it('calls a method through the reflection invoker with the given parameters', function (): void {
+    $source = new class
+    {
+        public function greet(string $name, string $punctuation = '!'): string
+        {
+            return 'Hello '.$name.$punctuation;
+        }
+    };
+
+    $invoker = new Pollora\BlockBinding\Infrastructure\Adapters\ReflectionMethodInvoker;
+
+    expect($invoker->call($source, 'greet', ['name' => 'Ada']))->toBe('Hello Ada!');
+});
