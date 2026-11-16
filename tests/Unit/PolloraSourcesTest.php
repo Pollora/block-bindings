@@ -90,3 +90,33 @@ it('pollora/option reads only the options the project lists', function (): void 
     expect($source(new BindingContext(args: ['name' => 'blogdescription'])))->toBe('Live music')
         ->and($source(new BindingContext(args: ['name' => 'admin_email'])))->toBeNull();
 });
+
+it('pollora/author-meta reads nothing without a key, a post or an author', function (array $args, ?int $postId, string $author): void {
+    Functions\when('get_post_field')->justReturn($author);
+    $context = new BindingContext(args: $args, attribute: 'content', postId: $postId);
+
+    expect((new AuthorMetaSource($this->reader, $this->formatter))($context))->toBeNull();
+})->with([
+    'no key' => [[], 7, '5'],
+    'empty key' => [['key' => ''], 7, '5'],
+    'key not a string' => [['key' => 12], 7, '5'],
+    'no post' => [['key' => 'stage_name'], null, '5'],
+    'post without author' => [['key' => 'stage_name'], 7, '0'],
+]);
+
+it('pollora/post-meta reads nothing without a key or a post', function (array $args, ?int $postId): void {
+    $context = new BindingContext(args: $args, attribute: 'content', postId: $postId, postType: 'concert');
+
+    expect((new PostMetaSource($this->reader, $this->formatter))($context))->toBeNull();
+})->with([
+    'no key' => [[], 7],
+    'empty key' => [['key' => ''], 7],
+    'no post' => [['key' => 'capacity'], null],
+]);
+
+it('pollora/post-meta finds the post type of the post when the block context has none', function (): void {
+    Functions\when('get_post_type')->justReturn('concert');
+    $context = new BindingContext(args: ['key' => 'capacity'], attribute: 'content', postId: 7);
+
+    expect((new PostMetaSource($this->reader, $this->formatter))($context))->toBe('1 200');
+});

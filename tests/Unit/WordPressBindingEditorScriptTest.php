@@ -34,3 +34,19 @@ it('prints the editor data before the script, on a handle depending on wp-blocks
         ->and($calls[2][2])->toStartWith('/**')
         ->and($calls[3])->toBe(['enqueue', 'pollora-block-bindings']);
 });
+
+it('prints nothing when the script file cannot be read', function (): void {
+    $calls = [];
+    Functions\when('wp_register_script')->alias(function () use (&$calls): bool {
+        $calls[] = 'register';
+
+        return true;
+    });
+    Functions\when('wp_enqueue_script')->alias(function () use (&$calls): void {
+        $calls[] = 'enqueue';
+    });
+
+    (new WordPressBindingEditorScript(new BindingEditorData(new BindingSourceRegistry, new MetaSchemaRepository, []), sys_get_temp_dir().'/missing-'.uniqid().'.js'))->enqueue();
+
+    expect($calls)->toBe([]);
+});

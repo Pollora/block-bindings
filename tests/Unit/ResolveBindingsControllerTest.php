@@ -87,3 +87,82 @@ it('formats the values in the site language, then gives the user theirs back', f
 
     expect($this->locales)->toBe(['switch:fr_FR', 'restore']);
 });
+
+it('does not restore a locale it could not switch', function (): void {
+    Functions\when('switch_to_locale')->justReturn(false);
+
+    $this->controller->handle(previewRequest(['bindings' => []]));
+
+    expect($this->locales)->toBe([]);
+});
+
+it('registers a POST route guarded by the preview permission', function (): void {
+    $routes = [];
+    Functions\when('register_rest_route')->alias(function (string $namespace, string $route, array $args) use (&$routes): bool {
+        $routes[] = [$namespace, $route, $args];
+
+        return true;
+    });
+
+    $this->controller->register();
+
+    expect($routes)->toHaveCount(1)
+        ->and($routes[0][0])->toBe('pollora/v1')
+        ->and($routes[0][2]['methods'])->toBe('POST')
+        ->and($routes[0][2]['callback'])->toBeCallable()
+        ->and($routes[0][2]['permission_callback'])->toBeCallable()
+        ->and($routes[0][2]['args']['bindings'])->toMatchArray(['required' => true, 'maxItems' => ResolveBindingsController::MAX_BINDINGS]);
+});
+
+it('ignores what is not a binding, and answers null for a source it does not know', function (): void {
+    $response = $this->controller->handle(previewRequest([
+        'context' => ['postId' => 7, 'postType' => 'event'],
+        'bindings' => [
+            'not an array',
+            ['key' => ['nested'], 'source' => 'acme/event'],
+            ['key' => 'ghost', 'source' => 'acme/unknown'],
+            ['key' => 'untyped', 'source' => 42],
+        ],
+    ]));
+
+    expect($response['values'])->toBe(['ghost' => null, 'untyped' => null]);
+});
+
+it('previews with the edit_posts capability when the post id sent is not a positive number', function (): void {
+    $seen = [];
+    Functions\when('current_user_can')->alias(function (string $capability, mixed ...$args) use (&$seen): bool {
+        $seen[] = [$capability, $args];
+
+        return true;
+    });
+
+    $request = previewRequest(['context' => ['postId' => '-3', 'termId' => 'abc', 'postType' => '', 'taxonomy' => ['x']]]);
+
+    expect($this->controller->canPreview($request))->toBeTrue()
+        ->and($seen)->toBe([['edit_posts', []]]);
+});
+
+it('decides the escaping of a binding by the source of the block attribute in the registry', function (): void {
+    $type = new WP_Block_Type;
+    $type->attributes = ['content' => ['source' => 'rich-text'], 'url' => ['type' => 'string']];
+    WP_Block_Type_Registry::get_instance()->types['core/paragraph'] = $type;
+
+    try {
+        $response = $this->controller->handle(previewRequest([
+            'context' => ['postId' => 7, 'postType' => 'event'],
+            'bindings' => [
+                ['key' => 'html', 'source' => 'acme/event', 'args' => ['field' => 'remaining_seats'], 'attribute' => 'content', 'block' => 'core/paragraph'],
+                ['key' => 'plain', 'source' => 'acme/event', 'args' => ['field' => 'remaining_seats'], 'attribute' => 'url', 'block' => 'core/paragraph'],
+                ['key' => 'unknown', 'source' => 'acme/event', 'args' => ['field' => 'remaining_seats'], 'attribute' => 'content', 'block' => 'acme/ghost'],
+            ],
+        ]));
+    } finally {
+        unset(WP_Block_Type_Registry::get_instance()->types['core/paragraph']);
+    }
+
+    expect($response['values'])->toBe([
+        'html' => '14 seats &amp; more',
+        'plain' => '14 seats & more',
+        'unknown' => '14 seats & more',
+    ]);
+});

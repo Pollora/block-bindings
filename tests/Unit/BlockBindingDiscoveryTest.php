@@ -20,6 +20,7 @@ use Pollora\Discovery\Domain\Models\DiscoveryLocation;
 use Pollora\Hook\Domain\Contract\Action;
 use Psr\Log\LoggerInterface;
 use Spatie\StructureDiscoverer\Data\DiscoveredClass;
+use Spatie\StructureDiscoverer\Data\DiscoveredInterface;
 
 require_once dirname(__DIR__).'/Fixtures/Invalid.php';
 require_once dirname(__DIR__).'/Fixtures/blocks.php';
@@ -102,4 +103,39 @@ it('refuses a source name another class declares', function (): void {
     $this->discovery->getItems()->add($this->location, ['class' => $clone::class]);
 
     $this->discovery->apply();
+});
+
+abstract class AbstractCoveredBinding
+{
+    abstract public function __invoke(): string;
+}
+
+interface CoveredBindingContract {}
+
+it('skips what is not a concrete class', function (): void {
+    $abstract = new #[BlockBinding('acme/abstract')] class extends AbstractCoveredBinding
+    {
+        public function __invoke(): string
+        {
+            return '';
+        }
+    };
+    $this->discovery->discover($this->location, DiscoveredClass::fromReflection(new ReflectionClass(AbstractCoveredBinding::class)));
+    $this->discovery->discover($this->location, DiscoveredInterface::fromReflection(new ReflectionClass(CoveredBindingContract::class)));
+
+    expect(iterator_to_array($this->discovery->getItems()))->toBe([])
+        ->and($abstract)->toBeInstanceOf(AbstractCoveredBinding::class);
+});
+
+it('is the block_bindings discovery', function (): void {
+    expect($this->discovery->getIdentifier())->toBe('block_bindings');
+});
+
+it('does not register a source WordPress already knows', function (): void {
+    $this->registered['acme/echo'] = ['label' => 'already'];
+    ($this->discover)(InvokableBinding::class);
+
+    $this->discovery->apply();
+
+    expect($this->registered['acme/echo'])->toBe(['label' => 'already']);
 });
