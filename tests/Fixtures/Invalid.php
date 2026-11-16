@@ -98,3 +98,47 @@ final class PrivateField
         return '';
     }
 }
+
+#[BlockBinding('acme/untyped-call')]
+final class UntypedInvokable
+{
+    public function __invoke()
+    {
+        return '';
+    }
+}
+
+#[BlockBinding('acme/both')]
+final class IntersectionField
+{
+    #[BindingField]
+    public function both(): \Stringable&\Countable
+    {
+        throw new \LogicException('Never called.');
+    }
+}
+
+#[BlockBinding('acme/union')]
+final class UnionField
+{
+    #[BindingField]
+    public function either(): string|array
+    {
+        return '';
+    }
+}
+
+#[BlockBinding('acme/helper-first')]
+final class HelperFirst
+{
+    public function helper(): string
+    {
+        return '';
+    }
+
+    #[BindingField]
+    public function title(): string
+    {
+        return 'title';
+    }
+}
