@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Accepts `pollora/discovery` 0.2 (`^0.1 || ^0.2 || ^1.0`)
 - The `BindingResolver` builds its default invoker from the new application-layer `DefaultMethodInvoker` instead of the infrastructure `ReflectionMethodInvoker`, so that the application layer no longer depends on the infrastructure layer. `ReflectionMethodInvoker` keeps its name, namespace and behavior: it delegates to `DefaultMethodInvoker`
 
 ## [0.2.0] - 2026-10-28
