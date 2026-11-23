@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 use Brain\Monkey;
 
-require_once __DIR__.'/Fixtures/wordpress.php';
-
 /*
 |--------------------------------------------------------------------------
 | Test Case
 |--------------------------------------------------------------------------
 |
 | No framework to boot. WordPress functions are stubbed with Brain Monkey,
-| and Mockery's expectations count as assertions.
+| and Mockery's expectations count as assertions. The WordPress classes the
+| tests build come from tests/bootstrap.php (the unit suite only).
 |
 */
 
