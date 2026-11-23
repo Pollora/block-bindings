@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Accepts `pollora/discovery` ^0.3 (`^0.1 || ^0.2 || ^0.3 || ^1.0`)
 - The unit suite loads the few WordPress classes its tests build from `tests/bootstrap.php` instead of `tests/Pest.php`, which the integration suite also loads (the real WordPress declares the same classes). No change to the package.
 
 ## [0.2.1] - 2026-11-19
