@@ -7,14 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-23
+
 ### Added
 
 - An integration suite (`tests/Integration`, `composer test:integration`) that runs against a real WordPress: registration of a source with the Block Bindings API and the rendering of a bound paragraph through a real `WP_Block`, the visibility of a draft, the preview route's validation and capability checks, and the editor script's handles and inline data. It is not part of the default `pest` run; the harness's optional `WordPress integration` job starts it.
 
 ### Changed
 
-- Accepts `pollora/discovery` ^0.3 (`^0.1 || ^0.2 || ^0.3 || ^1.0`)
 - The unit suite loads the few WordPress classes its tests build from `tests/bootstrap.php` instead of `tests/Pest.php`, which the integration suite also loads (the real WordPress declares the same classes). No change to the package.
+- Accepts `pollora/discovery` ^0.3 (`^0.1 || ^0.2 || ^0.3 || ^1.0`)
 
 ## [0.2.1] - 2026-11-19
 
