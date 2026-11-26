@@ -51,14 +51,16 @@ final readonly class DefaultMethodInvoker implements MethodInvokerInterface
      */
     private function service(string $class): ?object
     {
-        if ($this->container?->has($class) === true) {
-            return $this->container->get($class);
-        }
+        if ($this->container instanceof ContainerInterface) {
+            if ($this->container->has($class)) {
+                return $this->container->get($class);
+            }
 
-        try {
-            return $this->container?->get($class);
-        } catch (ContainerExceptionInterface) {
-            // not a service of this container: a class with no required argument is built below
+            try {
+                return $this->container->get($class);
+            } catch (ContainerExceptionInterface) {
+                // not a service of this container: a class with no required argument is built below
+            }
         }
 
         $constructor = class_exists($class) ? (new ReflectionClass($class))->getConstructor() : null;

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Without a container, the default invoker now builds a class-typed parameter whose class needs no argument, as documented; it failed with "Unable to resolve the parameter"
+
 ## [0.2.2] - 2026-11-23
 
 ### Added
