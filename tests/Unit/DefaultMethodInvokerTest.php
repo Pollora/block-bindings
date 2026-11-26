@@ -97,6 +97,10 @@ it('does not build a class with a required constructor argument, and passes null
     expect((new DefaultMethodInvoker(failingContainer()))->call(new InvokerTarget, 'heavy', []))->toBeNull();
 });
 
+it('builds a class that needs nothing when there is no container', function (): void {
+    expect((new DefaultMethodInvoker)->call(new InvokerTarget, 'service', []))->toBeInstanceOf(InvokerNeedsNothing::class);
+});
+
 it('uses the default value of a parameter nothing gives', function (): void {
     expect((new DefaultMethodInvoker)->call(new InvokerTarget, 'defaulted', []))->toBe('fallback');
 });
