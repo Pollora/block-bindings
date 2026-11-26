@@ -40,7 +40,7 @@ final readonly class WordPressBindingRegistry
         \register_block_bindings_source($source->name, [
             'label' => $source->label,
             'uses_context' => $source->usesContext,
-            'get_value_callback' => fn (array $args, \WP_Block $block, string $attribute): mixed => $this->resolver->resolve($source, $args, $block, $attribute),
+            'get_value_callback' => fn (array $args, \WP_Block $block, string $attribute): mixed => $this->resolver->resolve($source, array_filter($args, is_string(...), ARRAY_FILTER_USE_KEY), $block, $attribute),
         ]);
     }
 }

@@ -52,9 +52,13 @@ final class BlockBindingDiscovery implements DiscoveryInterface
     public function apply(): void
     {
         foreach ($this->getItems() as $item) {
-            /** @var class-string $class */
-            $class = $item['class'];
+            $class = is_array($item) ? ($item['class'] ?? null) : null;
 
+            if (! is_string($class)) {
+                continue;
+            }
+
+            /** @var class-string $class */
             try {
                 $source = $this->builder->build($class);
                 $this->sources->add($source);

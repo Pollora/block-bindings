@@ -9,6 +9,7 @@ use DateTimeInterface;
 use Pollora\BlockBinding\Domain\Contracts\ValuePresenterInterface;
 use Pollora\Meta\Domain\Enums\MetaValueType;
 use Pollora\Meta\Domain\Models\MetaDefinition;
+use Stringable;
 
 /**
  * Shows a typed meta the way its type calls for, which `core/post-meta` does
@@ -63,8 +64,8 @@ final readonly class BindingFormatter
         return match (true) {
             is_bool($value) => $this->presenter->boolean($value, $this->stringArg($args, 'true'), $this->stringArg($args, 'false')),
             is_int($value), is_float($value) => \number_format_i18n($value, $this->decimals($definition, $value, $args)),
-            $value instanceof DateTimeInterface => \wp_date($this->stringArg($args, 'format') ?? (string) \get_option('date_format'), $value->getTimestamp()) ?: null,
-            $value instanceof BackedEnum => method_exists($value, 'label') ? (string) $value->label() : (string) $value->value,
+            $value instanceof DateTimeInterface => \wp_date($this->stringArg($args, 'format') ?? $this->text(\get_option('date_format')), $value->getTimestamp()) ?: null,
+            $value instanceof BackedEnum => method_exists($value, 'label') ? $this->text($value->label()) : (string) $value->value,
             is_string($value) => $value,
             default => null,
         };
@@ -104,7 +105,7 @@ final readonly class BindingFormatter
 
         $value = match ($attribute) {
             'id' => $attachmentId,
-            'alt' => (string) \get_post_meta($attachmentId, '_wp_attachment_image_alt', true),
+            'alt' => $this->text(\get_post_meta($attachmentId, '_wp_attachment_image_alt', true)),
             'title' => \get_the_title($attachmentId),
             'caption' => (string) \wp_get_attachment_caption($attachmentId),
             default => $this->presenter->url((string) (\wp_get_attachment_image_url($attachmentId, $this->stringArg($args, 'size') ?? 'full') ?: \wp_get_attachment_url($attachmentId))),
@@ -145,5 +146,13 @@ final readonly class BindingFormatter
     private function stringArg(array $args, string $name): ?string
     {
         return is_scalar($args[$name] ?? null) ? (string) $args[$name] : null;
+    }
+
+    /**
+     * A value WordPress or an enum gives, as text; empty for one that has none.
+     */
+    private function text(mixed $value): string
+    {
+        return $value instanceof Stringable || is_scalar($value) ? (string) $value : '';
     }
 }

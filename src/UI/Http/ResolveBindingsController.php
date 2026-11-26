@@ -72,7 +72,7 @@ final readonly class ResolveBindingsController
             }
 
             $source = is_string($binding['source'] ?? null) ? $this->sources->find($binding['source']) : null;
-            $args = is_array($binding['args'] ?? null) ? $binding['args'] : [];
+            $args = is_array($binding['args'] ?? null) ? array_filter($binding['args'], is_string(...), ARRAY_FILTER_USE_KEY) : [];
             $attribute = is_string($binding['attribute'] ?? null) ? $binding['attribute'] : 'content';
 
             $values[(string) $binding['key']] = $source instanceof BindingSource
@@ -96,7 +96,8 @@ final readonly class ResolveBindingsController
             return null;
         }
 
-        $source = \WP_Block_Type_Registry::get_instance()->get_registered($blockName)?->attributes[$attribute]['source'] ?? null;
+        $definition = \WP_Block_Type_Registry::get_instance()->get_registered($blockName)?->attributes[$attribute] ?? null;
+        $source = is_array($definition) ? ($definition['source'] ?? null) : null;
 
         return is_string($source) ? $source : null;
     }
