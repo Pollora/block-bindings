@@ -46,7 +46,7 @@ function stringContainer(bool $has): ContainerInterface
 
 it('refuses a service the container gives that is not an object', function (bool $has): void {
     expect(fn (): mixed => (new DefaultMethodInvoker(stringContainer($has)))->call(new MisbehavingTarget, 'service', []))
-        ->toThrow(InvalidBindingSourceException::class, 'The container gives no object for MisbehavingService.');
+        ->toThrow(InvalidBindingSourceException::class, 'The block binding source MisbehavingService cannot be registered: the container gives no object for it.');
 })->with(['a service it holds' => [true], 'a service it does not say it holds' => [false]]);
 
 it('refuses a source the container gives no object for', function (): void {
@@ -54,5 +54,5 @@ it('refuses a source the container gives no object for', function (): void {
     $source = (new BindingSourceBuilder)->build(EventBinding::class);
 
     expect(fn (): mixed => $resolver->resolve($source, ['field' => 'capacity'], boundParagraph(), 'content'))
-        ->toThrow(InvalidBindingSourceException::class, 'The container gives no object for '.EventBinding::class.'.');
+        ->toThrow(InvalidBindingSourceException::class, 'The block binding source '.EventBinding::class.' cannot be registered: the container gives no object for it.');
 });

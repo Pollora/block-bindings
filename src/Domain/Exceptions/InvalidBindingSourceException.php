@@ -22,11 +22,6 @@ final class InvalidBindingSourceException extends InvalidArgumentException
         return new self(sprintf('The block binding field %s::%s() cannot be registered: %s', $class, $method, $reason));
     }
 
-    public static function notAnObject(string $class): self
-    {
-        return new self(sprintf('The container gives no object for %s.', $class));
-    }
-
     public static function duplicateName(string $name, string $existing, string $class): self
     {
         return new self(sprintf('The block binding source "%s" is declared twice, by %s and by %s.', $name, $existing, $class));
