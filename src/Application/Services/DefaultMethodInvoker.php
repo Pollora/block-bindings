@@ -74,6 +74,6 @@ final readonly class DefaultMethodInvoker implements MethodInvokerInterface
      */
     private function asService(mixed $service, string $class): ?object
     {
-        return $service === null || is_object($service) ? $service : throw InvalidBindingSourceException::notAnObject($class);
+        return $service === null || is_object($service) ? $service : throw InvalidBindingSourceException::forClass($class, 'the container gives no object for it.');
     }
 }

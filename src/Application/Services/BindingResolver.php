@@ -224,7 +224,7 @@ final class BindingResolver
     {
         $instance = $this->container->get($class);
 
-        return is_object($instance) ? $instance : throw InvalidBindingSourceException::notAnObject($class);
+        return is_object($instance) ? $instance : throw InvalidBindingSourceException::forClass($class, 'the container gives no object for it.');
     }
 
     private function reportSlow(BindingSource $source, BindingFieldDefinition $field, BindingContext $context, float $milliseconds): void
