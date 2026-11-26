@@ -11,7 +11,7 @@ use Pollora\BlockBinding\Tests\Fixtures\FakePresenter;
 use Pollora\BlockBinding\Tests\Fixtures\FakeVisibility;
 use Psr\Container\ContainerInterface;
 
-require_once dirname(__DIR__).'/Fixtures/blocks.php';
+require_once __DIR__.'/../Fixtures/blocks.php';
 
 final class MisbehavingService {}
 
@@ -28,9 +28,9 @@ final class MisbehavingTarget
  */
 function stringContainer(bool $has): ContainerInterface
 {
-    return new class($has) implements ContainerInterface
+    return new readonly class($has) implements ContainerInterface
     {
-        public function __construct(private readonly bool $has) {}
+        public function __construct(private bool $has) {}
 
         public function get(string $id): mixed
         {
