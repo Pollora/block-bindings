@@ -80,14 +80,25 @@ final class BindingContext
             MetaObjectType::Post => $this->postId,
             MetaObjectType::Term => $this->termId,
             MetaObjectType::User => $this->authorId(),
-            MetaObjectType::Comment => isset($this->block?->context['commentId']) ? (int) $this->block->context['commentId'] : null,
+            MetaObjectType::Comment => $this->commentId(),
         };
     }
 
     private function authorId(): ?int
     {
-        $author = (int) $this->post()?->getAttribute('post_author');
+        $author = $this->post()?->getAttribute('post_author');
+        $author = is_scalar($author) ? (int) $author : 0;
 
         return $author > 0 ? $author : null;
+    }
+
+    /**
+     * The comment of the block context, which WordPress gives as a numeric string.
+     */
+    private function commentId(): ?int
+    {
+        $commentId = $this->block?->context['commentId'] ?? null;
+
+        return is_scalar($commentId) ? (int) $commentId : null;
     }
 }

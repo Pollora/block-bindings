@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 /**
  * A `#[BlockBinding]` class WordPress could not register, or would register
- * in a way that fails silently in a block.
+ * in a way that fails silently in a block; or one the container cannot give.
  */
 final class InvalidBindingSourceException extends InvalidArgumentException
 {
@@ -20,6 +20,11 @@ final class InvalidBindingSourceException extends InvalidArgumentException
     public static function forField(string $class, string $method, string $reason): self
     {
         return new self(sprintf('The block binding field %s::%s() cannot be registered: %s', $class, $method, $reason));
+    }
+
+    public static function notAnObject(string $class): self
+    {
+        return new self(sprintf('The container gives no object for %s.', $class));
     }
 
     public static function duplicateName(string $name, string $existing, string $class): self

@@ -11,6 +11,7 @@ use Pollora\BlockBinding\Domain\Contracts\PostFinderInterface;
 use Pollora\BlockBinding\Domain\Contracts\ValuePresenterInterface;
 use Pollora\BlockBinding\Domain\Enums\BindingFieldType;
 use Pollora\BlockBinding\Domain\Events\BindingResolved;
+use Pollora\BlockBinding\Domain\Exceptions\InvalidBindingSourceException;
 use Pollora\BlockBinding\Domain\Models\BindingContext;
 use Pollora\BlockBinding\Domain\Models\BindingFieldDefinition;
 use Pollora\BlockBinding\Domain\Models\BindingSource;
@@ -79,7 +80,8 @@ final class BindingResolver
      */
     public function resolve(BindingSource $source, array $args, ?\WP_Block $block, string $attribute): mixed
     {
-        $attributeSource = $block?->block_type?->attributes[$attribute]['source'] ?? null;
+        $definition = $block?->block_type?->attributes[$attribute] ?? null;
+        $attributeSource = is_array($definition) ? ($definition['source'] ?? null) : null;
 
         return $this->resolveIn($source, $args, $block instanceof \WP_Block ? $block->context : [], $block, $attribute, is_string($attributeSource) ? $attributeSource : null);
     }
@@ -101,7 +103,7 @@ final class BindingResolver
 
     /**
      * @param  array<string, mixed>  $args
-     * @param  array<string, mixed>  $blockContext
+     * @param  array<array-key, mixed>  $blockContext
      */
     private function resolveIn(BindingSource $source, array $args, array $blockContext, ?\WP_Block $block, string $attribute, ?string $attributeSource = null): mixed
     {
@@ -159,7 +161,7 @@ final class BindingResolver
 
     /**
      * @param  array<string, mixed>  $args
-     * @param  array<string, mixed>  $blockContext
+     * @param  array<array-key, mixed>  $blockContext
      */
     private function context(array $args, array $blockContext, ?\WP_Block $block, string $attribute): BindingContext
     {
@@ -188,7 +190,7 @@ final class BindingResolver
     private function call(BindingSource $source, BindingFieldDefinition $field, BindingContext $context): mixed
     {
         try {
-            $instance = $this->instances[$source->class] ??= $this->container->get($source->class);
+            $instance = $this->instances[$source->class] ??= $this->instance($source->class);
 
             if (! $this->debug) {
                 return $this->invoker->call($instance, $field->method, [BindingContext::class => $context, 'context' => $context]);
@@ -213,6 +215,16 @@ final class BindingResolver
 
             return null;
         }
+    }
+
+    /**
+     * The instance of a source, as the container gives it.
+     */
+    private function instance(string $class): object
+    {
+        $instance = $this->container->get($class);
+
+        return is_object($instance) ? $instance : throw InvalidBindingSourceException::notAnObject($class);
     }
 
     private function reportSlow(BindingSource $source, BindingFieldDefinition $field, BindingContext $context, float $milliseconds): void
@@ -244,7 +256,7 @@ final class BindingResolver
         $inHtml = in_array($attributeSource, self::HTML_SOURCES, true);
 
         if (is_object($value) && method_exists($value, 'toHtml')) {
-            return $this->presenter->richText((string) $value->toHtml());
+            return $this->presenter->richText($this->text($value->toHtml()));
         }
 
         if (is_bool($value)) {
@@ -255,7 +267,7 @@ final class BindingResolver
             return $value;
         }
 
-        $string = $value instanceof Stringable || is_scalar($value) ? (string) $value : '';
+        $string = $this->text($value);
 
         return match (true) {
             $type->isUrl() => $this->presenter->url($string),
@@ -280,5 +292,13 @@ final class BindingResolver
     private function positiveInt(mixed $value): ?int
     {
         return is_numeric($value) && (int) $value > 0 ? (int) $value : null;
+    }
+
+    /**
+     * A value as text, empty for one that has none (an array, a plain object).
+     */
+    private function text(mixed $value): string
+    {
+        return $value instanceof Stringable || is_scalar($value) ? (string) $value : '';
     }
 }

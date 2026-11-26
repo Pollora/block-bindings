@@ -6,6 +6,7 @@ namespace Pollora\BlockBinding\Application\Services;
 
 use InvalidArgumentException;
 use Pollora\BlockBinding\Domain\Contracts\MethodInvokerInterface;
+use Pollora\BlockBinding\Domain\Exceptions\InvalidBindingSourceException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
@@ -53,11 +54,11 @@ final readonly class DefaultMethodInvoker implements MethodInvokerInterface
     {
         if ($this->container instanceof ContainerInterface) {
             if ($this->container->has($class)) {
-                return $this->container->get($class);
+                return $this->asService($this->container->get($class), $class);
             }
 
             try {
-                return $this->container->get($class);
+                return $this->asService($this->container->get($class), $class);
             } catch (ContainerExceptionInterface) {
                 // not a service of this container: a class with no required argument is built below
             }
@@ -66,5 +67,13 @@ final readonly class DefaultMethodInvoker implements MethodInvokerInterface
         $constructor = class_exists($class) ? (new ReflectionClass($class))->getConstructor() : null;
 
         return class_exists($class) && (! $constructor instanceof ReflectionMethod || $constructor->getNumberOfRequiredParameters() === 0) ? new $class : null;
+    }
+
+    /**
+     * What the container gave, which must be an object or nothing.
+     */
+    private function asService(mixed $service, string $class): ?object
+    {
+        return $service === null || is_object($service) ? $service : throw InvalidBindingSourceException::notAnObject($class);
     }
 }
