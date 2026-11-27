@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-27
+
 ### Changed
 
 - PHPStan runs at level 10. A container that gives something other than an object for a source or a service now raises `InvalidBindingSourceException` instead of a `TypeError`, and binding arguments with an integer key are left out (arguments are read by name)
